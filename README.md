@@ -45,6 +45,10 @@
 
 为避免自动任务误伤仓库控制面，脚本会拒绝改动 `.git` 和 `.github/workflows`。
 
+## 使用文档
+
+- [`docs/usage.md`](C:/zhongjun/code/test/auto/docs/usage.md)
+
 ## 本地调试
 
 ```bash
