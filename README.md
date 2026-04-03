@@ -31,6 +31,10 @@
 
 - [`.github/workflows/issue-to-pr.yml`](C:/zhongjun/code/test/auto/.github/workflows/issue-to-pr.yml)
 
+## 使用文档
+
+- [`docs/usage.md`](C:/zhongjun/code/test/auto/docs/usage.md)
+
 ## 本地调试
 
 ```bash
