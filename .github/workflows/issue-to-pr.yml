@@ -6,6 +6,9 @@ on:
       - opened
       - edited
       - reopened
+  issue_comment:
+    types:
+      - created
 
 permissions:
   contents: write
@@ -14,7 +17,9 @@ permissions:
 
 jobs:
   issue-to-pr:
-    if: contains(github.event.issue.title, '【小数】')
+    if: |
+      (github.event_name == 'issues' && contains(github.event.issue.title, '【小数】')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.issue.title, '【小数】'))
     runs-on: ubuntu-latest
     concurrency:
       group: issue-to-pr-${{ github.event.issue.number }}
@@ -34,6 +39,7 @@ jobs:
 
       - name: Run issue worker
         env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
