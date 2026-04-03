@@ -1,0 +1,9 @@
+{
+  "name": "ttfhw-issue-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "issue:run": "node scripts/issue-to-pr.mjs"
+  }
+}

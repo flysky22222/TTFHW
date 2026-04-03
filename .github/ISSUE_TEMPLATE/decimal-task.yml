@@ -1,0 +1,24 @@
+name: Decimal Task
+description: 用于触发自动实现流程的任务单
+title: "【小数】"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        标题必须包含 `【小数】`，工作流才会处理。
+  - type: textarea
+    id: task
+    attributes:
+      label: 任务描述
+      description: 说明你想让自动化实现的功能、改动或修复
+      placeholder: 例如：新增一个 hello 接口，并补一份 README
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 列出完成条件
+      placeholder: 例如：1. 提供示例 2. 代码可运行
+    validations:
+      required: false
