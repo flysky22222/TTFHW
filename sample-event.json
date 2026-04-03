@@ -1,0 +1,15 @@
+{
+  "action": "opened",
+  "issue": {
+    "number": 123,
+    "title": "【小数】新增 hello 接口",
+    "body": "请新增一个 hello 接口，并更新 README 说明调用方式。"
+  },
+  "repository": {
+    "name": "TTFHW",
+    "default_branch": "main",
+    "owner": {
+      "login": "flysky22222"
+    }
+  }
+}

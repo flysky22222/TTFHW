@@ -11,6 +11,10 @@ const EXCLUDED_DIRS = new Set([
   "node_modules",
   "tmp"
 ]);
+const PROTECTED_PATH_PREFIXES = [
+  ".git/",
+  ".github/workflows/"
+];
 
 async function main() {
   const eventPath = process.env.GITHUB_EVENT_PATH;
@@ -19,7 +23,7 @@ async function main() {
     throw new Error("Missing GITHUB_EVENT_PATH.");
   }
 
-  const payload = JSON.parse(fs.readFileSync(eventPath, "utf8"));
+  const payload = readJsonFile(eventPath);
   const issue = payload.issue;
 
   if (!issue) {
@@ -55,6 +59,8 @@ async function main() {
   if (!Array.isArray(plan.files) || plan.files.length === 0) {
     throw new Error("The model did not return any file changes.");
   }
+
+  validatePlan(plan);
 
   const branchName = sanitizeBranchName(
     plan.branchName || `issue/${issue.number}-${slugify(issue.title)}`
@@ -104,6 +110,11 @@ function requiredEnv(name) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
+}
+
+function readJsonFile(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8");
+  return JSON.parse(raw.replace(/^\uFEFF/, ""));
 }
 
 function log(message) {
@@ -199,7 +210,8 @@ async function requestImplementationPlan({ apiKey, issue, repoContext, owner, re
     "2. Return full file contents for every file listed.",
     "3. Keep branchName, commitMessage, prTitle, and prBody concise.",
     "4. Do not use markdown fences.",
-    "5. Prefer updating existing files instead of creating unnecessary new files."
+    "5. Prefer updating existing files instead of creating unnecessary new files.",
+    "6. Never modify .github/workflows or .git contents."
   ].join("\n");
 
   const userPrompt = [
@@ -246,12 +258,24 @@ async function requestImplementationPlan({ apiKey, issue, repoContext, owner, re
   return JSON.parse(content);
 }
 
+function validatePlan(plan) {
+  if (!plan || typeof plan !== "object") {
+    throw new Error("The model response must be a JSON object.");
+  }
+
+  if (!Array.isArray(plan.files)) {
+    throw new Error("The model response must include a files array.");
+  }
+}
+
 function applyFiles(files) {
   for (const file of files) {
     const relativePath = String(file.path || "").trim().replace(/\\/g, "/");
     if (!relativePath) {
       throw new Error("Encountered a file entry without a path.");
     }
+
+    ensureAllowedRelativePath(relativePath);
 
     const absolutePath = path.join(process.cwd(), relativePath);
     ensureInsideWorkspace(absolutePath);
@@ -265,6 +289,18 @@ function applyFiles(files) {
 
     fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
     fs.writeFileSync(absolutePath, String(file.content ?? ""), "utf8");
+  }
+}
+
+function ensureAllowedRelativePath(relativePath) {
+  if (relativePath.startsWith("/") || relativePath.includes("..")) {
+    throw new Error(`Refusing to write suspicious path: ${relativePath}`);
+  }
+
+  for (const prefix of PROTECTED_PATH_PREFIXES) {
+    if (relativePath === prefix.slice(0, -1) || relativePath.startsWith(prefix)) {
+      throw new Error(`Refusing to modify protected path: ${relativePath}`);
+    }
   }
 }
 

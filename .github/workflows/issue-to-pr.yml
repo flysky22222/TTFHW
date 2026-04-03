@@ -16,6 +16,9 @@ jobs:
   issue-to-pr:
     if: contains(github.event.issue.title, '【小数】')
     runs-on: ubuntu-latest
+    concurrency:
+      group: issue-to-pr-${{ github.event.issue.number }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout
