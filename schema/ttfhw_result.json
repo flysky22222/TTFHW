@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/flysky22222/TTFHW/schema/ttfhw_result.json",
+  "title": "TTFHW Test Result",
+  "description": "Standard schema for a single TTFHW use-case test result",
+  "type": "object",
+  "required": ["meta", "phases", "summary"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["use_case_id", "title", "community", "role", "target", "test_date"],
+      "properties": {
+        "use_case_id": { "type": "string", "description": "e.g. UC-07" },
+        "title":       { "type": "string", "description": "e.g. openEuler 贡献者场景 - 引入 SQLite 软件包" },
+        "community":   { "type": "string", "description": "e.g. openEuler, CANN, MindIE" },
+        "domain":      { "type": "string", "enum": ["昇腾", "鲲鹏"] },
+        "role":        { "type": "string", "enum": ["contributor", "user"] },
+        "target":      { "type": "string", "description": "具体目标，e.g. 将 sqlite 引入 openEuler 社区" },
+        "test_date":   { "type": "string", "format": "date" },
+        "tester":      { "type": "string" },
+        "search_platforms": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["Baidu", "Doubao"]
+        }
+      }
+    },
+    "phases": {
+      "type": "object",
+      "required": ["understanding", "acquisition", "usage", "contribution"],
+      "properties": {
+        "understanding": { "$ref": "#/definitions/Phase" },
+        "acquisition":   { "$ref": "#/definitions/Phase" },
+        "usage":         { "$ref": "#/definitions/Phase" },
+        "contribution":  { "$ref": "#/definitions/Phase" }
+      }
+    },
+    "problems": {
+      "type": "array",
+      "description": "实际发现的问题列表",
+      "items": { "$ref": "#/definitions/Problem" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["overall_result", "total_minutes", "friction_score"],
+      "properties": {
+        "overall_result": { "type": "string", "enum": ["pass", "fail", "partial"] },
+        "total_minutes":  { "type": "number", "description": "总耗时（分钟）" },
+        "friction_score": {
+          "type": "number", "minimum": 1, "maximum": 10,
+          "description": "摩擦感评分 1=极流畅 10=极困难"
+        },
+        "doc_quality_score": { "type": "number", "minimum": 1, "maximum": 5 },
+        "key_blockers":  { "type": "array", "items": { "type": "string" } },
+        "recommendations": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "definitions": {
+    "Phase": {
+      "type": "object",
+      "required": ["result", "steps"],
+      "properties": {
+        "result": { "type": "string", "enum": ["pass", "fail", "skip"] },
+        "duration_minutes": { "type": "number" },
+        "steps": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Step" }
+        },
+        "friction_points": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      }
+    },
+    "Step": {
+      "type": "object",
+      "required": ["desc", "result"],
+      "properties": {
+        "desc":       { "type": "string" },
+        "command":    { "type": "string" },
+        "doc_url":    { "type": "string" },
+        "doc_title":  { "type": "string" },
+        "result":     { "type": "string", "enum": ["pass", "fail", "skip"] },
+        "failure_count": { "type": "integer", "default": 0 },
+        "failure_reason":{ "type": "string" },
+        "workaround": { "type": "string" }
+      }
+    },
+    "Problem": {
+      "type": "object",
+      "required": ["id", "phase", "severity", "description"],
+      "properties": {
+        "id":          { "type": "string", "description": "e.g. P-01" },
+        "phase":       { "type": "string", "enum": ["understanding", "acquisition", "usage", "contribution"] },
+        "severity":    { "type": "string", "enum": ["blocker", "major", "minor"] },
+        "description": { "type": "string" },
+        "evidence":    { "type": "string", "description": "截图路径或命令输出" },
+        "fix_status":  { "type": "string", "enum": ["open", "attempted", "fixed", "wontfix"] },
+        "fix_pr_url":  { "type": "string" }
+      }
+    }
+  }
+}
